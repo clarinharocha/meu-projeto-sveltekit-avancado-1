@@ -1,9 +1,9 @@
 export async function load({ fetch, url }) {
-    const pais = url.seacrchParams.get('pais');
+    const age = url.searchParams.get('age');
     let link = 'https://dummyjson.com/users';
-    if (pais) link += `key=country&value=${pais}`
-    const res = await fetch('https://dummyjson.com/users');
-    const data = await res.json();
+    if (age) { link += `/filter?key=age&value=${age}` }
+    const res = await fetch(link);
+    const users = await res.json();
 
     return { users };
 }

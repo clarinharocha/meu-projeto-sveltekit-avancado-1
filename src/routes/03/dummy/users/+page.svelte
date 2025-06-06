@@ -1,16 +1,17 @@
 <script>
     let { data } = $props();
+    console.log(data)
 </script>
 
 <h3>Usuários</h3>
 <form>
-    <input name="pais" placeholder="Filtrar por país" />
+    <input name="age" placeholder="Filtrar por idade" />
     <button>Filtrar</button>
 </form>
 <ul>
-    {#each data.users as user}
+    {#each data.users.users as user}
       <li><a href="/03/dummy/users/{user.id}">
-       {user.firstName} {user.lastName} ({user.address.country})
+       {user.firstName} {user.lastName} ({user.age} anos)
       </a></li>
     {/each}
 </ul>
