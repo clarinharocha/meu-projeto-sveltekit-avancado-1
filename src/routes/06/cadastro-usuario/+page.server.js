@@ -1,25 +1,36 @@
 import { fail, redirect } from '@sveltejs/kit';
 
+function contem(texto, caracteres){
+  for (const caractere of caracteres)
+    if (texto.includes(caractere)) return true;
+  return false;
+}
+
 export const actions = {
   default: async ({ request }) => {
     const data = await request.formData();
-    const email = data.get('email');
-    const nome = data.get('nome');
-    const nascimento = data.get('nascimento');
+    const dados = {
+     email: data.get('email'),
+     nome: data.get('nome'),
+     nascimento: data.get('nascimento'),
+     senha: data.get('senha'),
+     confirmacaosenha: data.get('confirmacaosenha'),
+     erros: []
+    }
 
-    if (!email || !senha) return fail(400, { error: 'Email e senha são obrigatórios.', email });
+    if (!dados.email || !dados.senha || !dados.nascimento || !dados.nome || !dados.confirmacaosenha) dados.erros.push('Preencha todos os campos.');
 
-    if (!email.includes('@')) return fail(400, { error: 'Email inválido.', email });
+    if (!dados.email.includes('@')) dados.erros.push('Email inválido.');
 
-    if (senha.length < 4) return fail(400, { error: 'A senha deve ter pelo menos 4 caracteres.', email });
+    if(dados.senha!= dados.confirmacaosenha) dados.erros.push('Senha não conferem.');
 
-    if (email == "email@inexistente") return fail(400, { error: 'Email ou senha inválidos.', email });
-
+    if(!contem(dados.senha,"abcdefghijklmnopqrstuvwxyz") || !contem(dados.senha,"ABCDEFGHIJKLMNOPQRSTUVWXYZ") || !contem(dados.senha,"0123456789") || !contem(dados.senha,"!@#$%¨&*()-_+=")) dados.erros.push('A senha deve ter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial.');
+    
     let agora = new Date();
     let nascimento = new Date(nascimento);
     if (agora - nascimento < 38691200000)
-        return fail(400, { error: 'Você ainda não completou 12 anos!', nome, email, nascimento});
-
+    dados.erros.push('Você ainda não completou 12 anos!', nome, email, nascimento);
+    
     redirect(303, '/06/profile');
   }
 };
