@@ -1,36 +1,52 @@
 import { fail, redirect } from '@sveltejs/kit';
 
 function contem(texto, caracteres){
-  for (const caractere of caracteres)
-    if (texto.includes(caractere)) return true;
-  return false;
+    for (const caractere of caracteres)
+        if(texto.includes(caractere)) return true;
+    return false;
 }
 
 export const actions = {
-  default: async ({ request }) => {
-    const data = await request.formData();
-    const dados = {
-     email: data.get('email'),
-     nome: data.get('nome'),
-     nascimento: data.get('nascimento'),
-     senha: data.get('senha'),
-     confirmacaosenha: data.get('confirmacaosenha'),
-     erros: []
+    default: async ({ request }) => {
+        const data = await request.formData();
+        const dados = {
+            nome: data.get('nome'),
+            senha: data.get('senha'),
+            confirmacaoSenha: data.get('confirmacaoSenha'),
+            email: data.get('email'),
+            nascimento: data.get('nascimento'),
+            erros: []
+        };
+
+        if (!dados.email || !dados.nome || !dados.nascimento || !dados.senha || !dados.confirmacaoSenha)
+            dados.erros[0] = 'Preencha todos os campos.';
+
+        if (
+            !contem(dados.email, '@') ||
+            !contem(dados.email, '.') ||
+            !contem(dados.email, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
+        )
+            dados.erros[1] = 'O e-mail deve conter apenas letras, um "@" e um ponto ".", com pelo menos uma palavra antes do @ e duas após, separadas pelo .';
+
+        if (
+            !contem(dados.senha, 'abcdefghijklmnopqrstuvwxyz') ||
+            !contem(dados.senha, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') ||
+            !contem(dados.senha, '0123456789') ||
+            !contem(dados.senha, '!@#$%¨&*()-_+=')
+        )
+            dados.erros[2] = 'A senha deve conter pelo menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial.';
+
+        if (dados.senha !== dados.confirmacaoSenha)
+            dados.erros[3] = 'A senha e a confirmação de senha não coincidem.';
+
+        let agora = new Date();
+        let nascimentoDate = new Date(dados.nascimento);
+        if (agora - nascimentoDate < 378691200000)
+            dados.erros[4] = 'Você deve ter pelo menos 12 anos para se cadastrar.';
+
+        if (dados.erros.length > 0)
+            return fail(400, dados);
+
+        throw redirect(303, `/06/profile?email=${encodeURIComponent(dados.email)}&usuario=${encodeURIComponent(dados.nome)}`);
     }
-
-    if (!dados.email || !dados.senha || !dados.nascimento || !dados.nome || !dados.confirmacaosenha) dados.erros.push('Preencha todos os campos.');
-
-    if (!dados.email.includes('@')) dados.erros.push('Email inválido.');
-
-    if(dados.senha!= dados.confirmacaosenha) dados.erros.push('Senha não conferem.');
-
-    if(!contem(dados.senha,"abcdefghijklmnopqrstuvwxyz") || !contem(dados.senha,"ABCDEFGHIJKLMNOPQRSTUVWXYZ") || !contem(dados.senha,"0123456789") || !contem(dados.senha,"!@#$%¨&*()-_+=")) dados.erros.push('A senha deve ter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial.');
-    
-    let agora = new Date();
-    let nascimento = new Date(nascimento);
-    if (agora - nascimento < 38691200000)
-    dados.erros.push('Você ainda não completou 12 anos!', nome, email, nascimento);
-    
-    redirect(303, '/06/profile');
-  }
 };
