@@ -1,0 +1,1 @@
+<h1>Seja Bem-Vindo a Guilda dos Artesãos!</h1>
